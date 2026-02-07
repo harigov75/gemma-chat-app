@@ -1,1 +1,26 @@
-<p>chat-app works!</p>
+<div class="outer-div">
+    <div class="outer-frame">
+        <div class="chat-screen">
+            <div class="output-style" *ngIf="output">
+                {{output}}
+            </div>
+        </div>
+        <div class="typing-area">
+            <form [formGroup]="chatControlForm">
+                <div class="row">
+                    <div class="col-md-8">
+                        <mat-form-field class="input-field">
+                            <input formControlName="chatInput" matInput placeholder="Type Something">
+                        </mat-form-field>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="submit-btn" type="submit" [disabled]="chatControlForm.invalid"
+                            (click)="submit()">
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
