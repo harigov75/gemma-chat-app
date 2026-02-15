@@ -1,9 +1,12 @@
 <div class="outer-div">
     <div class="outer-frame">
-        <div class="chat-screen">
-            <div class="output-style" *ngIf="output">
-                {{output}}
-            </div>
+        <div class="chat-screen" #scrollContainer>
+            <ng-container *ngIf="conversation.length">
+                <div *ngFor="let ob of conversation"
+                    [ngClass]="ob.role === 'assistant' ? 'assistant-style' : 'user-style'">
+                    {{ob.content}}
+                </div>
+            </ng-container>
         </div>
         <div class="typing-area">
             <form [formGroup]="chatControlForm">
