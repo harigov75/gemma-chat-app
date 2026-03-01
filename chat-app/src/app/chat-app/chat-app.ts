@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, NgZone, OnInit, ViewChild, ElementRef, AfterViewInit, Input, Output, EventEmitter } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnInit, ViewChild, ElementRef, AfterViewInit, Input } from '@angular/core';
 import { ReactiveFormsModule, FormControl, Validators, FormGroup } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -22,7 +22,6 @@ export class ChatApp implements OnInit, AfterViewInit {
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
   @Input() characterId: number = 1;
-  @Output() onBack = new EventEmitter<void>();
 
   constructor(
     private http: HttpClient,
@@ -46,14 +45,9 @@ export class ChatApp implements OnInit, AfterViewInit {
     // Initialization logic if needed
   }
 
-  goBack() {
-    this.onBack.emit();
-  }
-
   submit() {
     console.log(this.chatControlForm.controls.chatInput.value)
     const userMessage = this.chatControlForm.controls.chatInput.value;
-    let buffer = '';
     this.conversation.push({
       role: 'user',
       content: userMessage
@@ -69,50 +63,44 @@ export class ChatApp implements OnInit, AfterViewInit {
         ...this.conversation
       ]
     }
-    const options = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    };
+
     this.http.post(this.url, payload, {
       observe: "events",
       responseType: "text",
       reportProgress: true
-    }).subscribe((res: any) => {
+    }).subscribe({
+      next: (res: any) => {
+        this.zone.run(() => {
+          if (res.type === HttpEventType.DownloadProgress && res.partialText) {
+            const lines = res.partialText.split('\n');
+            this.output = '';
 
-      if (res.type === HttpEventType.DownloadProgress && res.partialText) {
+            for (const line of lines) {
+              if (!line.trim()) continue;
+              try {
+                const parsed = JSON.parse(line);
+                this.output += parsed.message?.content ?? '';
+              } catch { }
+            }
 
-        const lines = res.partialText.split('\n');
+            this.cdr.detectChanges();
+            this.scrollToBottom();
+          }
 
-        this.output = '';
-
-        for (const line of lines) {
-          if (!line.trim()) continue;
-
-          try {
-            const parsed = JSON.parse(line);
-            this.output += parsed.message?.content ?? '';
-          } catch { }
-        }
-
-        this.cdr.markForCheck();
-        this.scrollToBottom();
-      }
-
-
-      if (res.type === HttpEventType.Response) {
-
-        this.conversation.push({
-          role: 'assistant',
-          content: this.output
+          if (res.type === HttpEventType.Response) {
+            this.conversation.push({
+              role: 'assistant',
+              content: this.output
+            });
+            this.cdr.detectChanges();
+            this.scrollToBottom();
+          }
         });
-        this.scrollToBottom();
-
+      },
+      error: (err) => {
+        console.error('API Error:', err);
       }
-
-    })
+    });
 
     this.chatControlForm.reset();
   }

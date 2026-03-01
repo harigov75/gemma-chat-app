@@ -1,15 +1,17 @@
 <div class="outer-div">
-    <button mat-icon-button (click)="goBack()" class="back-btn" title="Back to Selection">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor">
-            <path d="M400-80 0-480l400-400 71 71-329 329 329 329-71 71Z" />
-        </svg>
-    </button>
     <div class="outer-frame">
         <div class="chat-screen" #scrollContainer>
             <ng-container *ngIf="conversation.length">
-                <div *ngFor="let ob of conversation"
-                    [ngClass]="ob.role === 'assistant' ? 'assistant-style' : 'user-style'">
-                    {{ob.content}}
+                <div *ngFor="let ob of conversation" class="message-wrapper"
+                    [ngClass]="ob.role === 'assistant' ? 'assistant-wrapper' : 'user-wrapper'">
+
+                    <div *ngIf="ob.role === 'assistant'" class="profile-div">
+                        {{ ob.role === 'assistant' ? 'Y' : '' }}
+                    </div>
+
+                    <div [ngClass]="ob.role === 'assistant' ? 'assistant-style' : 'user-style'">
+                        {{ob.content}}
+                    </div>
                 </div>
             </ng-container>
         </div>
