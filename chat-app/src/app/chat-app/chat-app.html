@@ -1,36 +1,54 @@
 <div class="outer-div">
     <div class="outer-frame">
         <div class="chat-screen" #scrollContainer>
+
             <ng-container *ngIf="conversation.length">
                 <div *ngFor="let ob of conversation" class="message-wrapper"
                     [ngClass]="ob.role === 'assistant' ? 'assistant-wrapper' : 'user-wrapper'">
 
+                    <!-- Profile -->
                     <div *ngIf="ob.role === 'assistant'" class="profile-div">
-                        {{ ob.role === 'assistant' ? 'Y' : '' }}
+                        Y
                     </div>
 
+                    <!-- Message bubble -->
                     <div [ngClass]="ob.role === 'assistant' ? 'assistant-style' : 'user-style'">
-                        {{ob.content}}
+
+                        <!-- 🟡 Assistant typing bubble -->
+                        <ng-container *ngIf="ob.role === 'assistant' && ob.content === null"><div class="typing"><span></span><span></span><span></span></div></ng-container>
+
+                        <!-- 🟢 Assistant response (animated text) -->
+                        <ng-container *ngIf="ob.role === 'assistant' && ob.content !== null">{{ ob.content }}</ng-container>
+
+                        <!-- 🔵 User message -->
+                        <ng-container *ngIf="ob.role === 'user'">{{ ob.content }}</ng-container>
+
                     </div>
                 </div>
             </ng-container>
+
         </div>
+
+        <!-- Input -->
         <div class="typing-area">
             <form [formGroup]="chatControlForm">
                 <div class="row">
                     <div class="col-md-8">
                         <mat-form-field class="input-field">
-                            <input formControlName="chatInput" matInput placeholder="Type Something">
+                            <input formControlName="chatInput" matInput
+                                [placeholder]="isStreamingActive ? 'Yoda is thinking...' : 'Type Something'"
+                                [disabled]="isStreamingActive">
                         </mat-form-field>
                     </div>
                     <div class="col-md-4">
-                        <button class="submit-btn" type="submit" [disabled]="chatControlForm.invalid"
-                            (click)="submit()">
+                        <button class="submit-btn" type="submit"
+                            [disabled]="chatControlForm.invalid || isStreamingActive" (click)="submit()">
                             Send
                         </button>
                     </div>
                 </div>
             </form>
         </div>
+
     </div>
 </div>
